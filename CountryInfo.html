@@ -1,0 +1,220 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+  <meta charset="utf-8">
+  <title></title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="">
+  <meta property="og:type" content="">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="">
+
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="apple-touch-icon" href="icon.png">
+  <!-- Place favicon.ico in the root directory -->
+
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/main.css">
+
+  <meta name="theme-color" content="#fafafa">
+  <style>
+    table {
+      border-collapse: collapse;
+      font-family: Tahoma, Geneva, sans-serif;
+      margin-top: 20px;
+      margin-right: 25%;
+      margin-left: 30%;
+    }
+
+    table td {
+      padding: 15px;
+    }
+
+    table thead td {
+      background-color: #54585d;
+      color: #ffffff;
+      font-weight: bold;
+      font-size: 13px;
+      border: 1px solid #54585d;
+    }
+
+    table tbody td {
+      color: #636363;
+      border: 1px solid #dddfe1;
+    }
+
+    table tbody tr {
+      background-color: #f9fafb;
+    }
+
+    table tbody tr:nth-child(odd) {
+      background-color: #ffffff;
+    }
+
+    ul {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #333;
+    }
+
+    .topbar {
+      float: left;
+    }
+
+    li a {
+      display: block;
+      color: white;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+    }
+
+    li a:hover {
+      background-color: #111;
+    }
+
+    .ref {
+      font-size: 12px;
+      display: block;
+      width: 150px;
+      height: 25px;
+      background: #4E9CAF;
+      padding: 10px;
+      margin-bottom: 5px;
+      margin-top: 5px;
+      text-align: center;
+      border-radius: 5px;
+      color: white;
+      font-weight: bold;
+      line-height: 25px;
+    }
+  </style>
+</head>
+
+<body onload="getCountryInfo(); getCityList()">
+
+<!-- Add your site or application content here -->
+<script src="js/vendor/modernizr-3.11.2.min.js"></script>
+<script src="js/plugins.js"></script>
+<script src="js/main.js"></script>
+
+<ul>
+  <li class="topbar"><a class="active" href="index.html">Country list</a></li>
+</ul>
+
+<h1 id="name"></h1>
+
+<div id="countryInfo">
+  <table>
+    <tr>
+      <td>Native name</td>
+      <td>Common name</td>
+      <td>Capital</td>
+      <td>Currency</td>
+      <td>Flag</td>
+      <td>Actions</td>
+    </tr>
+    <tr>
+      <td id="nn"></td>
+      <td id="cn"></td>
+      <td id="cap"></td>
+      <td id="curr"></td>
+      <td><img id="flag" src="" style="max-height: 75%; max-width: 75%"></td>
+      <td><a id="ref" class="ref">How's the weather ?</a>
+          <a id="ref2" class="ref">Convert currency</a></td>
+<!--          <a id="ref3" class="ref">See cities</a>-->
+      </td>
+    </tr>
+  </table>
+</div>
+
+<h2>City list</h2>
+<div id="myItemList"></div>
+
+
+<script type="text/javascript">
+  function getCountryInfo() {
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const nameInput = urlParams.get('name')
+    var apiUrl = 'https://restcountries.com/v3.1/name/' + nameInput;
+    fetch(apiUrl).then(response => {
+      return response.json();
+    }).then(data => {
+      // Work with JSON data here
+
+      let name = data[0].name.common;
+      let nativeNamel = data[0].name.nativeName;
+      let keys = Object.keys(nativeNamel);
+      let key = keys[0];
+
+      let capital = data[0].capital;
+      let currency = Object.keys(data[0].currencies);
+      let flagPNG = data[0].flags.png;
+
+
+
+      let nativeName = data[0].name.nativeName[key].common;
+      document.getElementById("name").innerHTML = "Info about country: " + nameInput;
+      document.getElementById("nn").innerHTML = nativeName;
+      document.getElementById("cn").innerHTML = name;
+      document.getElementById("cap").innerHTML = capital;
+      document.getElementById("curr").innerHTML = currency[0];
+      document.getElementById("flag").src = flagPNG;
+      document.getElementById("ref").href = "WeatherInfo.html?name=" + name;
+      document.getElementById("ref2").href = "ConvertCurrency.html?name=" + name + "&currency=" + currency[0];
+      //document.getElementById("ref3").href = "Cities.html?cca2=" + countryCode;
+    }).catch(err => {
+      window.alert("No such country !")
+      // Do something for an error here
+    });
+  }
+  function getCityList() {
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const nameInput = urlParams.get('cca2')
+    ol = document.createElement('ol');
+    document.getElementById('myItemList').appendChild(ol);
+    var apiUrl = 'http://127.0.0.1:8081/' + nameInput;
+    fetch(apiUrl).then(response => {
+      return response.json();
+    }).then(data => {
+      // Work with JSON data here
+      data.sort(compare);
+      data.forEach(function (item) {
+        let name = item.name;
+        let div = document.createElement('div');
+        let a = document.createElement('a');
+        ol.appendChild(div);
+        div.appendChild(a);
+        a.setAttribute('href', "WeatherInfo.html?name=" + name);
+        a.innerHTML += name;
+
+      });
+
+    }).catch(err => {
+      window.alert("No such country !")
+      // Do something for an error here
+    });
+
+  }
+  function compare(a, b) {
+    if (a.name < b.name) {
+      return -1;
+    }
+    if (a.name> b.name) {
+      return 1;
+    }
+    return 0;
+  }
+
+</script>
+
+</body>
+
+</html>

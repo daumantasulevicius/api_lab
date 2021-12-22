@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title></title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="">
+  <meta property="og:type" content="">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="">
+
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.css"/>
+  <link rel="apple-touch-icon" href="icon.png">
+  <!-- Place favicon.ico in the root directory -->
+
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/main.css">
+
+  <meta name="theme-color" content="#fafafa">
+  <style>
+    #strong {
+      border-collapse: collapse;
+      font-family: Tahoma, Geneva, sans-serif;
+      margin-top: 20px;
+      margin-right: 25%;
+      margin-left: 30%;
+    }
+
+    ul {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #333;
+    }
+
+    .topbar {
+      float: left;
+    }
+
+    li a {
+      display: block;
+      color: white;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+    }
+
+    li a:hover {
+      background-color: #111;
+    }
+  </style>
+</head>
+<body id="body" onload="convertCurrency()">
+<script src="js/vendor/modernizr-3.11.2.min.js"></script>
+<script src="js/plugins.js"></script>
+<script src="js/main.js"></script>
+
+<ul>
+  <li class="topbar"><a class="active" href="index.html">Country list</a></li>
+</ul>
+
+<div class="col-md-6 well" style="margin-left: 25%; margin-top: 5%; border: double black;">
+  <h3 class="text-primary" id="name"></h3>
+  <hr style="border-top:1px dotted #ccc;">
+  <div class="col-md-2"></div>
+  <div class="col-md-8">
+    <h4>Converter</h4>
+    <hr style="border-top:1px; groovy: #ccc;"/>
+    <div class="form-group">
+      <select onchange="convertCurrency()" class="form-control" id="otherCurrency" style="width:30%;">
+        <option value="USD">Dollar</option>
+        <option value="GBP">Pound</option>
+        <option value="EUR">Euro</option>
+        <option value="JPY">Yen</option>
+        <option value="CNY">Yuan</option>
+      </select>
+      <br/>
+      <input type="number" oninput="convertCurrency()" class="form-control" id="amount" value="1"/>
+      <h4 id="rate"></h4>
+    </div>
+    <br/><br/>
+    <div class="form-group">
+      <label id="name2"></label>
+      <input type="text" class="form-control" id="answer" disabled="disabled"/>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  const queryString = window.location.search;
+  const urlParams = new URLSearchParams(queryString);
+  const nameInput = urlParams.get('name');
+  const currencyInput = urlParams.get('currency');
+  document.getElementById("name").innerHTML = "Convert currency to " + nameInput + " money";
+  document.getElementById("name2").innerHTML = nameInput + " " + currencyInput;
+
+  function convertCurrency() {
+
+    let url = "https://api.m3o.com/v1/currency/Convert";
+    let xhr = new XMLHttpRequest();
+    xhr.open("POST", url);
+    xhr.responseType = 'json';
+    xhr.setRequestHeader("Accept", "application/json");
+    xhr.setRequestHeader("Authorization", "Bearer YzFmMzI4ZTgtNjRhOS00NDE1LThjYWMtZDI3ZmFhOGFmMWM3");
+    xhr.setRequestHeader("Content-Type", "application/json");
+
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4) {
+        let response = xhr.response;
+        let rate = response.rate;
+        let convMoney = response.amount;
+        document.getElementById("answer").value = convMoney;
+        document.getElementById("rate").innerHTML = "Current rate - 1:" + rate;
+        console.log(xhr.status);
+        console.log(xhr.response);
+      }
+    };
+
+    let otherCurrency = document.getElementById("otherCurrency").value;
+    let amount = document.getElementById("amount").value;
+
+    let data = `{
+      "from": "${otherCurrency}",
+      "to": "${currencyInput}",
+      "amount": "${amount}"
+      }`;
+
+    xhr.send(data);
+  }
+
+</script>
+</body>
+</html>

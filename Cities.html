@@ -1,0 +1,109 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+  <meta charset="utf-8">
+  <title></title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="">
+  <meta property="og:type" content="">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="">
+
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="apple-touch-icon" href="icon.png">
+  <!-- Place favicon.ico in the root directory -->
+
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/main.css">
+
+  <meta name="theme-color" content="#fafafa">
+
+  <style>
+    ul {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #333;
+    }
+
+    .topbar {
+      float: left;
+    }
+
+    li a {
+      display: inline-block;
+      color: white;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+    }
+
+    li a:hover {
+      background-color: #111;
+    }
+  </style>
+</head>
+<body onload="getCityList()">
+
+<!-- Add your site or application content here -->
+<script src="js/vendor/modernizr-3.11.2.min.js"></script>
+<script src="js/plugins.js"></script>
+<script src="js/main.js"></script>
+
+<ul>
+  <li class="topbar"><a class="active" href="index.html">Country list</a></li>
+</ul>
+
+<h1>Choose a country to get its information</h1>
+
+<div id="myItemList"></div>
+
+
+<script type="text/javascript">
+  function getCityList() {
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const nameInput = urlParams.get('cca2')
+    ol = document.createElement('ol');
+    document.getElementById('myItemList').appendChild(ol);
+    var apiUrl = 'http://127.0.0.1:8081/' + nameInput;
+    fetch(apiUrl).then(response => {
+      return response.json();
+    }).then(data => {
+      // Work with JSON data here
+      data.sort(compare);
+      data.forEach(function (item) {
+        let name = item.name;
+        let div = document.createElement('div');
+        let a = document.createElement('a');
+        ol.appendChild(div);
+        div.appendChild(a);
+        a.setAttribute('href', "CountryInfo.html?name=" + name);
+        a.innerHTML += name;
+
+      });
+
+    }).catch(err => {
+      window.alert("No such country !")
+      // Do something for an error here
+    });
+
+  }
+  function compare(a, b) {
+    if (a.name < b.name) {
+      return -1;
+    }
+    if (a.name> b.name) {
+      return 1;
+    }
+    return 0;
+  }
+</script>
+
+</body>
+
+</html>

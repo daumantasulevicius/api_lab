@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title></title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="">
+  <meta property="og:type" content="">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="">
+
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="apple-touch-icon" href="icon.png">
+  <!-- Place favicon.ico in the root directory -->
+
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/main.css">
+
+  <meta name="theme-color" content="#fafafa">
+  <style>
+    strong{
+      border-collapse: collapse;
+      font-family: Tahoma, Geneva, sans-serif;
+      margin-top: 50px;
+      margin-right: 25%;
+    }
+    table {
+      border-collapse: collapse;
+      font-family: Tahoma, Geneva, sans-serif;
+      margin-top: 20px;
+      margin-right: 25%;
+      margin-left: 30%;
+    }
+
+    table td {
+      padding: 15px;
+    }
+
+    table thead td {
+      background-color: #54585d;
+      color: #ffffff;
+      font-weight: bold;
+      font-size: 13px;
+      border: 1px solid #54585d;
+    }
+
+    table tbody td {
+      color: #636363;
+      border: 1px solid #dddfe1;
+    }
+
+    table tbody tr {
+      background-color: #f9fafb;
+    }
+
+    table tbody tr:nth-child(odd) {
+      background-color: #ffffff;
+    }
+    ul {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #333;
+    }
+
+    .topbar {
+      float: left;
+    }
+
+    li a {
+      display: block;
+      color: white;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+    }
+
+    li a:hover {
+      background-color: #111;
+    }
+  </style>
+</head>
+<body onload="getWeatherInfoNow()" id="body">
+<script src="js/vendor/modernizr-3.11.2.min.js"></script>
+<script src="js/plugins.js"></script>
+<script src="js/main.js"></script>
+
+<ul>
+  <li class="topbar"><a class="active" href="index.html">Country list</a></li>
+</ul>
+
+<h1 id="name"></h1>
+
+<div id="weatherNowInfo">
+  <table>
+    <strong style="margin-left: 30%;">
+      Current weather:
+    </strong>
+    <tr>
+      <td></td>
+      <td>Temperature</td>
+      <td>Description</td>
+      <td>Wind speed</td>
+    </tr>
+    <tr>
+      <td><img id="img" src=""></td>
+      <td id="temp"></td>
+      <td id="desc"></td>
+      <td id="wind"></td>
+    </tr>
+  </table>
+</div>
+
+<a style="visibility: hidden" id="lat"></a>
+<a style="visibility: hidden" id="lon"></a>
+
+<script type="text/javascript">
+  function getWeatherInfoNow() {
+    // Weather now
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const nameInput = urlParams.get('name')
+    let apiUrl = 'https://api.openweathermap.org/data/2.5/weather?q=' + nameInput
+      + '&units=metric&appid=' + "e34498d8bfd3173a9d13685ff8085430";
+    fetch(apiUrl).then(response => {
+      return response.json();
+    }).then(data => {
+      // Work with JSON data here
+
+      let temp = data.main.temp;
+      let description = data.weather[0].description;
+      let wind = data.wind.speed;
+      let iconSym = data.weather[0].icon;
+      let iconUrl = 'http://openweathermap.org/img/wn/' + iconSym + '@2x.png';
+      let lat = data.coord.lat;
+      let lon = data.coord.lon;
+
+      document.getElementById("name").innerHTML = "Weather in city: " + nameInput;
+      document.getElementById("temp").innerHTML = temp + " c°";
+      document.getElementById("desc").innerHTML = description;
+      document.getElementById("wind").innerHTML = wind + " m/s";
+      document.getElementById("img").src = iconUrl;
+      document.getElementById("lat").innerHTML = lat;
+      document.getElementById("lon").innerHTML = lon;
+      getWeatherInfoDaily();
+
+    }).catch(err => {
+      window.alert("No such country !")
+      // Do something for an error here
+    });
+  }
+
+  function getWeatherInfoDaily() {
+    let lat = document.getElementById("lat").innerHTML;
+    let lon = document.getElementById("lon").innerHTML;
+    let table = document.createElement('table');
+    document.getElementById('body').appendChild(table);
+    let tbody = document.createElement('tbody');
+    let strong = document.createElement('strong');
+    strong.innerHTML = "7 Day Forecast:";
+    table.appendChild(strong);
+    table.appendChild(tbody);
+
+    let row_1 = document.createElement('tr');
+    let head0 = document.createElement('td');
+    head0.innerHTML = "Day";
+    let head1 = document.createElement('td');
+    head1.innerHTML = "Icon";
+    let head2 = document.createElement('td');
+    head2.innerHTML = "Temperature Day";
+    let head3 = document.createElement('td');
+    head3.innerHTML = "Temperature Night";
+    let head4 = document.createElement('td');
+    head4.innerHTML = "Wind Speed";
+    let head5 = document.createElement('td');
+    head5.innerHTML = "Description";
+
+    row_1.appendChild(head0);
+    row_1.appendChild(head1);
+    row_1.appendChild(head2);
+    row_1.appendChild(head3);
+    row_1.appendChild(head4);
+    row_1.appendChild(head5);
+    tbody.appendChild(row_1);
+
+    let apiURL = 'https://api.openweathermap.org/data/2.5/onecall?lat=' +
+      lat + '&lon=' + lon + '&exclude=minutely,hourly&units=metric&appid=e34498d8bfd3173a9d13685ff8085430';
+    console.log(apiURL);
+    fetch(apiURL).then(response => {
+      return response.json();
+    }).then(data => {
+      // Work with JSON data here
+
+      let numberOfDays = Object.keys(data.daily).length;
+      data.daily.forEach(function (item) {
+        let dt = new Date(item.dt*1000);
+        let tempDay = item.temp.day;
+        let tempNight = item.temp.night;
+        let windSpeed = item.wind_speed;
+        let description = item.weather[0].description;
+        let iconSym = item.weather[0].icon;
+        let iconUrl = 'http://openweathermap.org/img/wn/' + iconSym + '@2x.png';
+
+        let rowD = document.createElement('tr');
+        let rowD_day = document.createElement('td');
+        rowD_day.innerHTML = dt;
+        let rowD_icon = document.createElement('td');
+        rowD_icon.innerHTML = "<img src=" + iconUrl + ">";
+        let rowD_tempD = document.createElement('td');
+        rowD_tempD.innerHTML = tempDay + " c°";
+        let rowD_tempN = document.createElement('td');
+        rowD_tempN.innerHTML = tempNight + " c°";
+        let rowD_windS = document.createElement('td');
+        rowD_windS.innerHTML = windSpeed + " m/s";
+        let rowD_desc = document.createElement('td');
+        rowD_desc.innerHTML = description;
+
+        rowD.appendChild(rowD_day);
+        rowD.appendChild(rowD_icon);
+        rowD.appendChild(rowD_tempD);
+        rowD.appendChild(rowD_tempN);
+        rowD.appendChild(rowD_windS);
+        rowD.appendChild(rowD_desc);
+
+        tbody.appendChild(rowD);
+      });
+    }).catch(err => {
+      window.alert("No such country !")
+      // Do something for an error here
+    });
+  }
+
+</script>
+</body>
+</html>
